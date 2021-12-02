@@ -1,96 +1,51 @@
 #!/bin/bash
 
-#Script to setup Tomcat on centOS/RHEL 6.x and 7.x
 
-#Author Apoti Eri (Lionel)  May 2021
+#Script to setup Apache Tomcat on centOS/RHEL 6.x and 7.x
 
-# Check if running as root
-if [ "$(id -u)" != "0" ]; then
-   echo "This script must be run as root" 1>&2
-   exit 1
-fi
+#Author Olufemi A.
+#Date:  Sept 2019
+#Modify: May 2020
 
-# Check OS Version and Type
-OS_VERSION=`cat /etc/*release |grep VERSION_ID |awk -F\" '{print $2}'`
-OS_TYPE=`cat /etc/*release|head -1|awk '{print $1}'`
 
-echo -e "\n Checking if your server is connected to the network...."
+echo -e "\nInstalling tomcat ..\n"
 
 sleep 4
 
-ping google.com -c 4
+cd /opt
 
-if
-  [[ ${?} -ne 0 ]]
- then
- echo -e "\nPlease verify that your server is connected!!\n"
- exit 2
- fi
+wget https://downloads.apache.org/tomcat/tomcat-8/v8.5.61/bin/apache-tomcat-8.5.61.tar.gz
 
-echo -e "\nChecking if system is centOS 6 or 7\n"
+tar -xzvf apache-tomcat-8.5.61.tar.gz
 
-if
-  [[ ${OS_VERSION} -eq 7 ]] && [[ ${OS_TYPE} == CentOS ]]
- then
- echo -e "\nDetected that you are running CentOS7 \n"
-fi
+rm -rf apa*.gz
+mv apache* tomcat
 
-# Java Installation
-sleep 6
-echo "Installing Java8..."
+chmod +x /opt/tomcat/bin/startup.sh
+chmod +x /opt/tomcat/bin/shutdown.sh
+
+ln -s /opt/tomcat/bin/startup.sh /usr/local/bin/tomcatup
+ln -s /opt/tomcat/bin/shutdown.sh /usr/local/bin/tomcatdown
+
+echo -e "\nStarting tomcat\n"
+sleep 4
+
+tomcatup
+
+echo -e "\n Installing ip tables package...\n"
+
 sleep 3
+#yum install iptables-services -y
 
-yum install java-1.8* -y
-echo "Checking the java version, please wait"
+echo "configuring the port 8080 on the firewall for jenkins server"
+sleep 3
+firewall-cmd --permanent --add-port=8080/tcp
+firewall-cmd --reload
+#sed -i '/:OUTPUT ACCEPT/a \-A INPUT -m state --state NEW -m tcp -p tcp --dport 8080 -j ACCEPT' /etc/sysconfig/iptables
+echo
+#echo "Restart iptables services "
+#service iptables restart
 
 echo
-
-sleep 2
-
-java -version
-
-sleep 2
-
-# Tomcat installation
-cd /opt
-wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.0.12/bin/apache-tomcat-10.0.12.tar.gz
-tar -xvzf /opt/apache-tomcat-10.0.12.tar.gz
-
-chmod +x /opt/apache-tomcat-10.0.12/bin/startup.sh
-chmod +x /opt/apache-tomcat-10.0.12/bin/shutdown.sh
-
-# Creating a soft link to start Tomcat
-ln -s /opt/apache-tomcat-10.0.12/bin/startup.sh /usr/local/bin/tomcatup
-ln -s /opt/apache-tomcat-10.0.12/bin/shutdown.sh /usr/local/bin/tomcatdown
-
-firewall-cmd --permanent --add-port=8090/tcp
-
-firewall-cmd --reload
-
-
-sed -i 's/8080/8090/g' /opt/apache-tomcat-10.0.12/conf/server.xml
-
-# Modifying context.xml files
-sed -i '21 s/^/<!--/' /opt/apache-tomcat-10.0.12/webapps/host-manager/META-INF/context.xml
-sed -i '22 s/$/-->/' /opt/apache-tomcat-10.0.12/webapps/host-manager/META-INF/context.xml
-
-sed -i '21 s/^/<!--/' /opt/apache-tomcat-10.0.12/webapps/manager/META-INF/context.xml
-sed -i '22 s/$/-->/' /opt/apache-tomcat-10.0.12/webapps/manager/META-INF/context.xml
-
-## Alternative - sed -i 's/<Valve/<!-- <Valve/; s/<\/Context>/ --> <\/Context>/' context.xml
-
-tomcatup
-
-sed -i 's/<\/tomcat-users>/<role rolename="manager-gui"\/><role rolename="manager-script"\/><role rolename="manager-jmx"\/><role rolename="manager-status"\/><user username="admin" password="admin" roles="manager-gui, manager-script, manager-jmx, manager-status"\/><user username="deployer" password="deployer" roles="manager-script"\/><user username="tomcat" password="s3cret" roles="manager-gui"\/><\/tomcat-users>/g' /opt/apache-tomcat-10.0.12/conf/tomcat-users.xml
-
-tomcatdown
-
-tomcatup
-
-echo "Install complete"
-
-tomcatdown
-
-echo "Rebooting Tomcat"
-
-tomcatup
+echo " Use this link to access your tomcat server. http://$(hostname -I |awk '{print $1}'):8080"
+echo
