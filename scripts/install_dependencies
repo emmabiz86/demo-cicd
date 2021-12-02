@@ -52,7 +52,7 @@ cat > /etc/init.d/tomcat7 <<'EOF'
 #!/bin/bash
 # description: Tomcat7 Start Stop Restart
 # processname: tomcat7
-JAVA_HOME=/usr/java/jdk1.17.0.1 
+JAVA_HOME=/usr/bin/java/jdk1.17.0.1 
 export JAVA_HOME 
 PATH=$JAVA_HOME/bin:$PATH 
 export PATH
