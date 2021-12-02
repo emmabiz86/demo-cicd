@@ -1,16 +1,18 @@
 #!/bin/bash
 
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+
 set -e
 
-CATALINA_HOME=/usr/share/tomcat7-codedeploy
-TOMCAT_VERSION=7.0.77
+CATALINA_HOME=/usr/share/tomcat7
 
 # Tar file name
-TOMCAT7_CORE_TAR_FILENAME="apache-tomcat-$TOMCAT_VERSION.tar.gz"
+TOMCAT7_CORE_TAR_FILENAME='apache-tomcat-7.0.34.tar.gz'
 # Download URL for Tomcat7 core
-TOMCAT7_CORE_DOWNLOAD_URL="https://archive.apache.org/dist/tomcat/tomcat-7/v$TOMCAT_VERSION/bin/$TOMCAT7_CORE_TAR_FILENAME"
+TOMCAT7_CORE_DOWNLOAD_URL="https://ftp.metu.edu.tr/pub/mirrors/ftp.apache.org/tomcat/tomcat-7/v7.0.34/bin/$TOMCAT7_CORE_TAR_FILENAME"
 # The top-level directory after unpacking the tar file
-TOMCAT7_CORE_UNPACKED_DIRNAME="apache-tomcat-$TOMCAT_VERSION"
+TOMCAT7_CORE_UNPACKED_DIRNAME='apache-tomcat-7.0.34'
 
 
 # Check whether there exists a valid instance
@@ -24,31 +26,36 @@ TOMCAT7_CORE_UNPACKED_DIRNAME="apache-tomcat-$TOMCAT_VERSION"
 if [ -d $CATALINA_HOME ]; then
     rm -rf $CATALINA_HOME
 fi
-mkdir -p $CATALINA_HOME
+sudo mkdir -p $CATALINA_HOME
 
 # Download the latest Tomcat7 version
 cd /tmp
-{ which wget; } || { yum install wget; }
+ { which wget; } || { sudo yum install wget; }
 wget $TOMCAT7_CORE_DOWNLOAD_URL
 if [[ -d /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME ]]; then
-    rm -rf /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME
+    sudo rm -rf /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME
 fi
-tar xzf $TOMCAT7_CORE_TAR_FILENAME
+sudo tar xzf $TOMCAT7_CORE_TAR_FILENAME
 
 # Copy over to the CATALINA_HOME
-cp -r /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME/* $CATALINA_HOME
+sudo cp -r /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME/* $CATALINA_HOME
+# { which tomcat7; } || { yum -y install tomcat7; }
 
 # Install Java if not yet installed
-{ which java; } || { yum install java; }
+# wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.rpm
+# sudo rpm -Uvh jdk-17_linux-x64_bin.rpm
+
+{ which java; } || { sudo yum install java-1.8.0-openjdk; }
 
 # Create the service init.d script
 cat > /etc/init.d/tomcat7 <<'EOF'
 #!/bin/bash
 # description: Tomcat7 Start Stop Restart
 # processname: tomcat7
-PATH=$JAVA_HOME/bin:$PATH
+JAVA_HOME=/usr/bin/java/jdk1.17.0.1 
+PATH=$JAVA_HOME//usr/bin:$PATH
 export PATH
-CATALINA_HOME='/usr/share/tomcat7-codedeploy'
+CATALINA_HOME='/usr/share/tomcat7'
 case $1 in
 start)
 sh $CATALINA_HOME/bin/startup.sh
@@ -65,4 +72,4 @@ exit 0
 EOF
 
 # Change permission mode for the service script
-chmod 755 /etc/init.d/tomcat7
+sudo chmod 755 /etc/init.d/tomcat7
