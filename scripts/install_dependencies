@@ -5,7 +5,7 @@
 
 set -e
 
-CATALINA_HOME=/usr/local/tomcat7
+CATALINA_HOME=/usr/share/apache-tomcat-7.0.34
 
 # Tar file name
 TOMCAT7_CORE_TAR_FILENAME='apache-tomcat-7.0.34.tar.gz'
@@ -29,7 +29,7 @@ fi
 sudo mkdir -p $CATALINA_HOME
 
 # Download the latest Tomcat7 version
-cd /opt
+cd /tmp
  { which wget; } || { sudo yum install wget; }
 wget $TOMCAT7_CORE_DOWNLOAD_URL
 if [[ -d /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME ]]; then
@@ -42,22 +42,19 @@ sudo cp -r /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME/* $CATALINA_HOME
 # { which tomcat7; } || { yum -y install tomcat7; }
 
 # Install Java if not yet installed
-# wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.rpm
-# sudo rpm -Uvh jdk-17_linux-x64_bin.rpm
+wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.rpm
+sudo rpm -Uvh jdk-17_linux-x64_bin.rpm
 
-{ which java; } || { sudo yum install java-1.8.0-openjdk; }
+{ which java; } || { sudo yum -y install java; }
 
 # Create the service init.d script
 cat > /etc/init.d/tomcat7 <<'EOF'
 #!/bin/bash
 # description: Tomcat7 Start Stop Restart
 # processname: tomcat7
-JAVA_HOME=/usr/bin/java/jdk1.17.0.1 
-PATH=$JAVA_HOME//usr/bin:$PATH
+PATH=$JAVA_HOME/bin:$PATH
 export PATH
-export PATH=/usr/local/tomcat7/bin:$PATH
-export CATALINA_HOME/usr/local/tomcat7
-CATALINA_HOME='/usr/local/tomcat7'
+CATALINA_HOME='/usr/share/apache-tomcat-7.0.34'
 case $1 in
 start)
 sh $CATALINA_HOME/bin/startup.sh
