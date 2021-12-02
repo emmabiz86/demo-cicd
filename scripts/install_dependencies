@@ -30,7 +30,7 @@ sudo mkdir -p $CATALINA_HOME
 
 # Download the latest Tomcat7 version
 cd /tmp
- { which wget; } || {sudo yum install wget; }
+ { which wget; } || { sudo yum install wget; }
 wget $TOMCAT7_CORE_DOWNLOAD_URL
 if [[ -d /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME ]]; then
     sudo rm -rf /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME
