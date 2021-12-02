@@ -1,92 +1,96 @@
 #!/bin/bash
 
-TOMCAT_URL="https://archive.apache.org/dist/tomcat/tomcat-8/v8.5.43/bin/apache-tomcat-8.5.43.tar.gz"
+#Script to setup Tomcat on centOS/RHEL 6.x and 7.x
 
-function check_java_home {
-    if [ -z ${JAVA_HOME} ]
-    then
-        echo 'Could not find JAVA_HOME. Please install Java and set JAVA_HOME'
-	exit
-    else 
-	echo 'JAVA_HOME found: '$JAVA_HOME
-        if [ ! -e ${JAVA_HOME} ]
-        then
-	    echo 'Invalid JAVA_HOME. Make sure your JAVA_HOME path exists'
-	    exit
-        fi
-    fi
-}
+#Author Apoti Eri (Lionel)  May 2021
 
-echo 'Installing tomcat server...'
-echo 'Checking for JAVA_HOME...'
-check_java_home
-
-echo 'Downloading tomcat-8.5...'
-if [ ! -f /etc/apache-tomcat-8*tar.gz ]
-then
-    curl -O $TOMCAT_URL
+# Check if running as root
+if [ "$(id -u)" != "0" ]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
 fi
-echo 'Finished downloading...'
 
-echo 'Creating install directories...'
-sudo mkdir -p '/opt/tomcat/8_5'
+# Check OS Version and Type
+OS_VERSION=`cat /etc/*release |grep VERSION_ID |awk -F\" '{print $2}'`
+OS_TYPE=`cat /etc/*release|head -1|awk '{print $1}'`
 
-if [ -d "/opt/tomcat/8_5" ]
-then
-    echo 'Extracting binaries to install directory...'
-    sudo tar xzf apache-tomcat-8*tar.gz -C "/opt/tomcat/8_5" --strip-components=1
-    echo 'Creating tomcat user group...'
-    sudo groupadd tomcat
-    sudo useradd -s /bin/false -g tomcat -d /opt/tomcat tomcat
-    
-    echo 'Setting file permissions...'
-    cd "/opt/tomcat/8_5"
-    sudo chgrp -R tomcat "/opt/tomcat/8_5"
-    sudo chmod -R g+r conf
-    sudo chmod -R g+x conf
+echo -e "\n Checking if your server is connected to the network...."
 
-    # This should be commented out on a production server
-    sudo chmod -R g+w conf
+sleep 4
 
-    sudo chown -R tomcat webapps/ work/ temp/ logs/
+ping google.com -c 4
 
-    echo 'Setting up tomcat service...'
-    sudo touch tomcat.service
-    sudo chmod 777 tomcat.service 
-    echo "[Unit]" > tomcat.service
-    echo "Description=Apache Tomcat Web Application Container" >> tomcat.service
-    echo "After=network.target" >> tomcat.service
+if
+  [[ ${?} -ne 0 ]]
+ then
+ echo -e "\nPlease verify that your server is connected!!\n"
+ exit 2
+ fi
 
-    echo "[Service]" >> tomcat.service
-    echo "Type=forking" >> tomcat.service
+echo -e "\nChecking if system is centOS 6 or 7\n"
 
-    echo "Environment=JAVA_HOME=$JAVA_HOME" >> tomcat.service
-    echo "Environment=CATALINA_PID=/opt/tomcat/8_5/temp/tomcat.pid" >> tomcat.service
-    echo "Environment=CATALINA_HOME=/opt/tomcat/8_5" >> tomcat.service
-    echo "Environment=CATALINA_BASE=/opt/tomcat/8_5" >> tomcat.service
-    echo "Environment=CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC" >> tomcat.service
-    echo "Environment=JAVA_OPTS=-Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom" >> tomcat.service
-
-    echo "ExecStart=/opt/tomcat/8_5/bin/startup.sh" >> tomcat.service
-    echo "ExecStop=/opt/tomcat/8_5/bin/shutdown.sh" >> tomcat.service
-
-    echo "User=tomcat" >> tomcat.service
-    echo "Group=tomcat" >> tomcat.service
-    echo "UMask=0007" >> tomcat.service
-    echo "RestartSec=10" >> tomcat.service
-    echo "Restart=always" >> tomcat.service
-
-    echo "[Install]" >> tomcat.service
-    echo "WantedBy=multi-user.target" >> tomcat.service
-
-    sudo mv tomcat.service /etc/systemd/system/tomcat.service
-    sudo chmod 755 /etc/systemd/system/tomcat.service
-    sudo systemctl daemon-reload
-    
-    echo 'Starting tomcat server....'
-    sudo systemctl start tomcat
-    exit
-else
-    echo 'Could not locate installation direcotry..exiting..'
-    exit
+if
+  [[ ${OS_VERSION} -eq 7 ]] && [[ ${OS_TYPE} == CentOS ]]
+ then
+ echo -e "\nDetected that you are running CentOS7 \n"
 fi
+
+# Java Installation
+sleep 6
+echo "Installing Java8..."
+sleep 3
+
+yum install java-1.8* -y
+echo "Checking the java version, please wait"
+
+echo
+
+sleep 2
+
+java -version
+
+sleep 2
+
+# Tomcat installation
+cd /opt
+wget https://dlcdn.apache.org/tomcat/tomcat-10/v10.0.12/bin/apache-tomcat-10.0.12.tar.gz
+tar -xvzf /opt/apache-tomcat-10.0.12.tar.gz
+
+chmod +x /opt/apache-tomcat-10.0.12/bin/startup.sh
+chmod +x /opt/apache-tomcat-10.0.12/bin/shutdown.sh
+
+# Creating a soft link to start Tomcat
+ln -s /opt/apache-tomcat-10.0.12/bin/startup.sh /usr/local/bin/tomcatup
+ln -s /opt/apache-tomcat-10.0.12/bin/shutdown.sh /usr/local/bin/tomcatdown
+
+firewall-cmd --permanent --add-port=8090/tcp
+
+firewall-cmd --reload
+
+
+sed -i 's/8080/8090/g' /opt/apache-tomcat-10.0.12/conf/server.xml
+
+# Modifying context.xml files
+sed -i '21 s/^/<!--/' /opt/apache-tomcat-10.0.12/webapps/host-manager/META-INF/context.xml
+sed -i '22 s/$/-->/' /opt/apache-tomcat-10.0.12/webapps/host-manager/META-INF/context.xml
+
+sed -i '21 s/^/<!--/' /opt/apache-tomcat-10.0.12/webapps/manager/META-INF/context.xml
+sed -i '22 s/$/-->/' /opt/apache-tomcat-10.0.12/webapps/manager/META-INF/context.xml
+
+## Alternative - sed -i 's/<Valve/<!-- <Valve/; s/<\/Context>/ --> <\/Context>/' context.xml
+
+tomcatup
+
+sed -i 's/<\/tomcat-users>/<role rolename="manager-gui"\/><role rolename="manager-script"\/><role rolename="manager-jmx"\/><role rolename="manager-status"\/><user username="admin" password="admin" roles="manager-gui, manager-script, manager-jmx, manager-status"\/><user username="deployer" password="deployer" roles="manager-script"\/><user username="tomcat" password="s3cret" roles="manager-gui"\/><\/tomcat-users>/g' /opt/apache-tomcat-10.0.12/conf/tomcat-users.xml
+
+tomcatdown
+
+tomcatup
+
+echo "Install complete"
+
+tomcatdown
+
+echo "Rebooting Tomcat"
+
+tomcatup
