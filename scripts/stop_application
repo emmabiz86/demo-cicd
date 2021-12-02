@@ -5,5 +5,5 @@
 
  set -e
 # cd /etc/init.d
-# 
+# tomcat7 stop
 systemctl stop tomcat
