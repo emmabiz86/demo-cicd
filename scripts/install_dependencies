@@ -8,11 +8,11 @@ set -e
 CATALINA_HOME=/usr/share/tomcat7
 
 # Tar file name
-#TOMCAT7_CORE_TAR_FILENAME='apache-tomcat-7.0.69.tar.gz'
+TOMCAT7_CORE_TAR_FILENAME='apache-tomcat-7.0.34.tar.gz'
 # Download URL for Tomcat7 core
-#TOMCAT7_CORE_DOWNLOAD_URL="http://mirror.olnevhost.net/pub/apache/tomcat/tomcat-7/v7.0.69/bin/$TOMCAT7_CORE_TAR_FILENAME"
+TOMCAT7_CORE_DOWNLOAD_URL="https://ftp.metu.edu.tr/pub/mirrors/ftp.apache.org/tomcat/tomcat-7/v7.0.34/bin/$TOMCAT7_CORE_TAR_FILENAME"
 # The top-level directory after unpacking the tar file
-#TOMCAT7_CORE_UNPACKED_DIRNAME='apache-tomcat-7.0.69'
+TOMCAT7_CORE_UNPACKED_DIRNAME='apache-tomcat-7.0.34'
 
 
 # Check whether there exists a valid instance
@@ -26,23 +26,23 @@ CATALINA_HOME=/usr/share/tomcat7
 if [ -d $CATALINA_HOME ]; then
     rm -rf $CATALINA_HOME
 fi
-#mkdir -p $CATALINA_HOME
+sudo mkdir -p $CATALINA_HOME
 
 # Download the latest Tomcat7 version
-#cd /tmp
-# { which wget; } || { yum install wget; }
-#wget $TOMCAT7_CORE_DOWNLOAD_URL
-#if [[ -d /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME ]]; then
-#    rm -rf /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME
-#fi
-#tar xzf $TOMCAT7_CORE_TAR_FILENAME
+cd /tmp
+ { which wget; } || {sudo yum install wget; }
+wget $TOMCAT7_CORE_DOWNLOAD_URL
+if [[ -d /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME ]]; then
+    sudo rm -rf /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME
+fi
+sudo tar xzf $TOMCAT7_CORE_TAR_FILENAME
 
 # Copy over to the CATALINA_HOME
-#cp -r /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME/* $CATALINA_HOME
-{ which tomcat7; } || { yum -y install tomcat7; }
+sudo cp -r /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME/* $CATALINA_HOME
+ { which tomcat7; } || { yum -y install tomcat7; }
 
 # Install Java if not yet installed
-{ which java; } || { yum -y install java; }
+{ which java; } || { sudo yum -y install java; }
 
 # Create the service init.d script
 cat > /etc/init.d/tomcat7 <<'EOF'
@@ -68,4 +68,4 @@ exit 0
 EOF
 
 # Change permission mode for the service script
-chmod 755 /etc/init.d/tomcat7
+sudo chmod 755 /etc/init.d/tomcat7
