@@ -5,4 +5,4 @@
 
  set -e
  cd /etc/init.d
- sudo tomcat7 stop
+ sudo tomcat stop
