@@ -72,3 +72,4 @@ EOF
 
 # Change permission mode for the service script
 sudo chmod 755 /etc/init.d/tomcat7
+sudo update-rc.d tomcat7 defaults
