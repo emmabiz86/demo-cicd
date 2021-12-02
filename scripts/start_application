@@ -31,7 +31,7 @@ fi
 cp $WAR_STAGED_LOCATION $CATALINA_HOME/webapps/$CONTEXT_PATH.war
 
 # Configure the Tomcat server HTTP connector
-{ which xsltproc; } || { yum install xsltproc; } || { apt-get install xsltproc; }
+{ which xsltproc; } || { yum install xsltproc; } || { yum install xsltproc; }
 cp $CATALINA_HOME/conf/server.xml $CATALINA_HOME/conf/server.xml.bak
 xsltproc $HTTP_PORT_CONFIG_XSL_LOCATION $CATALINA_HOME/conf/server.xml.bak > $CATALINA_HOME/conf/server.xml
 
