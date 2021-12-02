@@ -37,4 +37,4 @@ xsltproc $HTTP_PORT_CONFIG_XSL_LOCATION $CATALINA_HOME/conf/server.xml.bak > $CA
 
 # cd /etc/init.d
 # tomcat7 start
-systemctl start tomcat.service
+systemctl start tomcat
