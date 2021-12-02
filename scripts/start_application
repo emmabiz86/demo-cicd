@@ -36,5 +36,5 @@ cp $CATALINA_HOME/conf/server.xml $CATALINA_HOME/conf/server.xml.bak
 xsltproc $HTTP_PORT_CONFIG_XSL_LOCATION $CATALINA_HOME/conf/server.xml.bak > $CATALINA_HOME/conf/server.xml
 
  cd /etc/init.d
- tomcat7 start
+ sudo tomcat7 start
 
