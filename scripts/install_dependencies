@@ -47,8 +47,8 @@ cp -r /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME/* $CATALINA_HOME
 # Create the service init.d script
 cat > /etc/init.d/tomcat7 <<'EOF'
 #!/bin/bash
-# description: Tomcat7 Start Stop Restart
-# processname: tomcat7
+description: Tomcat7 Start Stop Restart
+processname: tomcat7
 PATH=$JAVA_HOME/bin:$PATH
 export PATH
 CATALINA_HOME='/usr/share/tomcat7'
