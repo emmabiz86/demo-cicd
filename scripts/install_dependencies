@@ -1,51 +1,74 @@
 #!/bin/bash
 
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
 
-#Script to setup Apache Tomcat on centOS/RHEL 6.x and 7.x
+set -e
 
-#Author Olufemi A.
-#Date:  Sept 2019
-#Modify: May 2020
+CATALINA_HOME=/usr/share/tomcat7
+
+# Tar file name
+#TOMCAT7_CORE_TAR_FILENAME='apache-tomcat-7.0.69.tar.gz'
+# Download URL for Tomcat7 core
+#TOMCAT7_CORE_DOWNLOAD_URL="http://mirror.olnevhost.net/pub/apache/tomcat/tomcat-7/v7.0.69/bin/$TOMCAT7_CORE_TAR_FILENAME"
+# The top-level directory after unpacking the tar file
+#TOMCAT7_CORE_UNPACKED_DIRNAME='apache-tomcat-7.0.69'
 
 
-echo -e "\nInstalling tomcat ..\n"
+# Check whether there exists a valid instance
+# of Tomcat7 installed at the specified directory
+[[ -d $CATALINA_HOME ]] && { service tomcat7 status; } && {
+    echo "Tomcat7 is already installed at $CATALINA_HOME. Skip reinstalling it."
+    exit 0
+}
 
-sleep 4
+# Clear install directory
+if [ -d $CATALINA_HOME ]; then
+    rm -rf $CATALINA_HOME
+fi
+#mkdir -p $CATALINA_HOME
 
-cd /opt
+# Download the latest Tomcat7 version
+#cd /tmp
+# { which wget; } || { yum install wget; }
+#wget $TOMCAT7_CORE_DOWNLOAD_URL
+#if [[ -d /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME ]]; then
+#    rm -rf /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME
+#fi
+#tar xzf $TOMCAT7_CORE_TAR_FILENAME
 
-wget https://downloads.apache.org/tomcat/tomcat-8/v8.5.61/bin/apache-tomcat-8.5.61.tar.gz
+# Copy over to the CATALINA_HOME
+#cp -r /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME/* $CATALINA_HOME
+{ which tomcat7; } || { yum -y install tomcat7; }
 
-tar -xzvf apache-tomcat-8.5.61.tar.gz
+# Install Java if not yet installed
+wget https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.rpm
+sudo rpm -Uvh jdk-17_linux-x64_bin.rpm
 
-rm -rf apa*.gz
-mv apache* tomcat
+#{ which java; } || { yum -y install java; }
 
-chmod +x /opt/tomcat/bin/startup.sh
-chmod +x /opt/tomcat/bin/shutdown.sh
+# Create the service init.d script
+cat > /etc/init.d/tomcat7 <<'EOF'
+#!/bin/bash
+# description: Tomcat7 Start Stop Restart
+# processname: tomcat7
+PATH=$JAVA_HOME/bin:$PATH
+export PATH
+CATALINA_HOME='/usr/share/tomcat7'
+case $1 in
+start)
+sh $CATALINA_HOME/bin/startup.sh
+;;
+stop)
+sh $CATALINA_HOME/bin/shutdown.sh
+;;
+restart)
+sh $CATALINA_HOME/bin/shutdown.sh
+sh $CATALINA_HOME/bin/startup.sh
+;;
+esac
+exit 0
+EOF
 
-ln -s /opt/tomcat/bin/startup.sh /usr/local/bin/tomcatup
-ln -s /opt/tomcat/bin/shutdown.sh /usr/local/bin/tomcatdown
-
-echo -e "\nStarting tomcat\n"
-sleep 4
-
-tomcatup
-
-echo -e "\n Installing ip tables package...\n"
-
-sleep 3
-#yum install iptables-services -y
-
-echo "configuring the port 8080 on the firewall for jenkins server"
-sleep 3
-firewall-cmd --permanent --add-port=8080/tcp
-firewall-cmd --reload
-#sed -i '/:OUTPUT ACCEPT/a \-A INPUT -m state --state NEW -m tcp -p tcp --dport 8080 -j ACCEPT' /etc/sysconfig/iptables
-echo
-#echo "Restart iptables services "
-#service iptables restart
-
-echo
-echo " Use this link to access your tomcat server. http://$(hostname -I |awk '{print $1}'):8080"
-echo
+# Change permission mode for the service script
+chmod 755 /etc/init.d/tomcat7
