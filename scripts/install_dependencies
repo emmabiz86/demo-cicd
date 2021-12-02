@@ -55,6 +55,8 @@ cat > /etc/init.d/tomcat7 <<'EOF'
 JAVA_HOME=/usr/bin/java/jdk1.17.0.1 
 PATH=$JAVA_HOME//usr/bin:$PATH
 export PATH
+export PATH=/usr/local/tomcat7/bin:$PATH
+export CATALINA_HOME/usr/local/tomcat7
 CATALINA_HOME='/usr/local/tomcat7'
 case $1 in
 start)
