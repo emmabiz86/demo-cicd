@@ -5,4 +5,4 @@
 
 # set -e
 # cd /etc/init.d
-# tomcat7 stop
+ tomcat7 stop
