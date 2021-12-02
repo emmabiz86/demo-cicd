@@ -8,10 +8,14 @@ files:
 hooks:
   BeforeInstall:
     - location: scripts/install_dependencies
+      runas: ec2-user
       timeout: 300
   ApplicationStart:
     - location: scripts/write_codedeploy_config.sh
+      runas: ec2-user
     - location: scripts/start_application
+      runas: ec2-user
       timeout: 300
   ValidateService:
     - location: scripts/basic_health_check.sh
+      runas: ec2-user
