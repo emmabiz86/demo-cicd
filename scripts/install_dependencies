@@ -5,7 +5,7 @@
 
 set -e
 
-CATALINA_HOME=/usr/share/tomcat7
+CATALINA_HOME=/usr/local/tomcat7
 
 # Tar file name
 TOMCAT7_CORE_TAR_FILENAME='apache-tomcat-7.0.34.tar.gz'
@@ -29,7 +29,7 @@ fi
 sudo mkdir -p $CATALINA_HOME
 
 # Download the latest Tomcat7 version
-cd /tmp
+cd /opt
  { which wget; } || { sudo yum install wget; }
 wget $TOMCAT7_CORE_DOWNLOAD_URL
 if [[ -d /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME ]]; then
@@ -55,7 +55,7 @@ cat > /etc/init.d/tomcat7 <<'EOF'
 JAVA_HOME=/usr/bin/java/jdk1.17.0.1 
 PATH=$JAVA_HOME//usr/bin:$PATH
 export PATH
-CATALINA_HOME='/usr/share/tomcat7'
+CATALINA_HOME='/usr/local/tomcat7'
 case $1 in
 start)
 sh $CATALINA_HOME/bin/startup.sh
