@@ -1,15 +1,10 @@
 version: 0.2
-
 phases:
-  install:
-    runtime-versions:
-      java: corretto8
   build:
     commands:
-      - mvn install
+      - mvn package
 artifacts:
   files:
-    - target/javawebdemo.war
     - appspec.yml
+    - target/javawebdemo.war
     - scripts/**/*
-  discard-paths: no
