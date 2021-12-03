@@ -27,7 +27,7 @@ mkdir -p $CATALINA_HOME
 
 # Download the latest Tomcat7 version
 cd /tmp
-{ which wget; } || { apt-get install wget; } || { yum install wget; }
+{ which wget; } || { apt-get install wget -y; } || { yum install wget -y; }
 wget $TOMCAT7_CORE_DOWNLOAD_URL
 if [[ -d /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME ]]; then
     rm -rf /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME
@@ -38,7 +38,7 @@ tar xzf $TOMCAT7_CORE_TAR_FILENAME
 cp -r /tmp/$TOMCAT7_CORE_UNPACKED_DIRNAME/* $CATALINA_HOME
 
 # Install Java if not yet installed
-{ which java; } || { apt-get install java; } || { yum install java; }
+{ which java; } || { apt-get install java -y; } || { yum install java -y; }
 
 # Create the service init.d script
 cat > /etc/init.d/tomcat7 <<'EOF'
