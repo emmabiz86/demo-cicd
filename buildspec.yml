@@ -1,4 +1,4 @@
-version: 0.1
+version: 0.2
 
 phases:
   install:
@@ -6,7 +6,7 @@ phases:
       java: corretto8
   build:
     commands:
-      - mvn install
+      - mvn package
 artifacts:
   files:
     - target/javawebdemo.war
