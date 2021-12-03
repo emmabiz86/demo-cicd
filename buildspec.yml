@@ -1,15 +1,10 @@
 version: 0.2
-
 phases:
-  install:
-    runtime-versions:
-      java: corretto11
   build:
     commands:
-      - mvn install
+      - mvn package
 artifacts:
   files:
-    - target/javawebdemo.war
     - appspec.yml
-    - scripts/**/*
-  discard-paths: no
+    - target/SampleMavenTomcatApp.war
+    - scripts/*
